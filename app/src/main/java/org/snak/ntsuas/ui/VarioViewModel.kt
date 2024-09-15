@@ -8,7 +8,7 @@ class VarioViewModel : ViewModel() {
     val altitude: StateFlow<Double>
         get() = this.vario.altitude
 
-    suspend fun setAltitude(altitude: Double) {
+    fun setAltitude(altitude: Double) {
         this.vario.setAltitude(altitude)
     }
 

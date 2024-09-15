@@ -15,8 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import org.snak.ntsuas.ui.VarioViewModel
 import org.snak.ntsuas.ui.theme.NtsuasTheme
 
@@ -34,9 +32,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding)
                         )
                         Button(onClick = {
-                            this@MainActivity.lifecycleScope.launch {
-                                varioViewModel.setAltitude(123.123456)
-                            }
+                            varioViewModel.setAltitude(123.123456)
                         }) {
                             Text(text = "Set")
                         }
