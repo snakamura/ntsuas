@@ -42,7 +42,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val varioViewModel: VarioViewModel by viewModels()
+    private val varioViewModel: VarioViewModel by viewModels() {
+        VarioViewModel.Factory
+    }
 }
 
 @Composable

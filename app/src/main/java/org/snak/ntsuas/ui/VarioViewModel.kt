@@ -1,10 +1,17 @@
 package org.snak.ntsuas.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.StateFlow
+import org.snak.ntsuas.NtsuasApplication
 import org.snak.ntsuas.model.Vario
 
-class VarioViewModel : ViewModel() {
+class VarioViewModel(
+    private val vario: Vario
+) : ViewModel() {
     val altitude: StateFlow<Double>
         get() = this.vario.altitude
 
@@ -12,8 +19,12 @@ class VarioViewModel : ViewModel() {
         this.vario.setAltitude(altitude)
     }
 
-    // TODO
-    // Creating a Vario instance here isn't correct.
-    // It shouldn't be created by UI.
-    private val vario: Vario = Vario()
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            this.initializer {
+                val vario = (this[APPLICATION_KEY] as NtsuasApplication).vario
+                VarioViewModel(vario)
+            }
+        }
+    }
 }
