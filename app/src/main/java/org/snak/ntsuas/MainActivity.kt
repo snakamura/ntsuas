@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
@@ -25,6 +27,9 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.snak.ntsuas.ui.VarioViewModel
@@ -44,13 +49,13 @@ class MainActivity : ComponentActivity() {
                             altitude = varioViewModel.altitude.collectAsState().value,
                             modifier = Modifier.padding(innerPadding)
                         )
-                        Button(onClick = {
+                        SpinButton(title = "Reset", spinning = this@MainActivity.applyingAltitude) {
                             when {
                                 ContextCompat.checkSelfPermission(
                                     this@MainActivity,
                                     Manifest.permission.ACCESS_FINE_LOCATION
                                 ) == PackageManager.PERMISSION_GRANTED -> {
-                                    this@MainActivity.setCurrentAltitude()
+                                    this@MainActivity.applyCurrentAltitude()
                                 }
 
                                 ActivityCompat.shouldShowRequestPermissionRationale(
@@ -70,8 +75,6 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                        }) {
-                            Text(text = "Set")
                         }
                     }
                 }
@@ -82,19 +85,16 @@ class MainActivity : ComponentActivity() {
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    private fun setCurrentAltitude() {
-        this.lifecycleScope.launch {
-            this@MainActivity.applyCurrentAltitude()
-        }
-    }
-
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     private suspend fun applyCurrentAltitude() {
+        this.applyingAltitude.update { true }
+
         val location = this.fusedLocationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY,
             null
         ).await()
         this.varioViewModel.setAltitude(location.altitude)
+
+        this.applyingAltitude.update { false }
     }
 
     private val varioViewModel: VarioViewModel by viewModels() {
@@ -104,14 +104,39 @@ class MainActivity : ComponentActivity() {
     private var setAltitudeLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)) {
-                this.setCurrentAltitude()
+                this.lifecycleScope.launch {
+                    this@MainActivity.applyCurrentAltitude()
+                }
             } else {
                 // TODO
                 // Show a message
             }
         }
+    private var applyingAltitude = MutableStateFlow(false)
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+}
+
+@Composable
+private fun SpinButton(title: String, spinning: StateFlow<Boolean>, job: suspend () -> Unit) {
+    val scope = rememberCoroutineScope()
+
+    Column {
+        Button(
+            onClick = {
+                scope.launch {
+                    job()
+                }
+            },
+            enabled = !spinning.collectAsState().value
+        ) {
+            if (spinning.collectAsState().value) {
+                CircularProgressIndicator()
+            } else {
+                Text(title)
+            }
+        }
+    }
 }
 
 @Composable
