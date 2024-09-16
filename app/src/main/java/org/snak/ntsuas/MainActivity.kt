@@ -21,9 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import org.snak.ntsuas.ui.VarioViewModel
 import org.snak.ntsuas.ui.theme.NtsuasTheme
 
@@ -80,16 +83,18 @@ class MainActivity : ComponentActivity() {
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     private fun setCurrentAltitude() {
-        // TODO
-        // Create a cancellation token associated with the lifecycle.
-        val cancellationToken = null
-        this.fusedLocationClient.getCurrentLocation(
+        this.lifecycleScope.launch {
+            this@MainActivity.applyCurrentAltitude()
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    private suspend fun applyCurrentAltitude() {
+        val location = this.fusedLocationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY,
-            cancellationToken
-        )
-            .addOnCompleteListener { task ->
-                this.varioViewModel.setAltitude(task.result.altitude)
-            }
+            null
+        ).await()
+        this.varioViewModel.setAltitude(location.altitude)
     }
 
     private val varioViewModel: VarioViewModel by viewModels() {
