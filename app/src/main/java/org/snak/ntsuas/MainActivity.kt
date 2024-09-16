@@ -53,7 +53,6 @@ class MainActivity : ComponentActivity() {
         this.fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
-    @SuppressWarnings("MissingPermission")
     @Composable
     private fun Vario(modifier: Modifier = Modifier) {
         var applyingCurrentAltitude by remember { mutableStateOf(false) }
