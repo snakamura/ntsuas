@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,9 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -43,46 +41,50 @@ class MainActivity : ComponentActivity() {
         setContent {
             NtsuasTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column(
+                    Vario(
                         modifier = Modifier.padding(innerPadding)
-                    ) {
-                        val varioViewModel = this@MainActivity.varioViewModel
-                        Altitude(
-                            altitude = varioViewModel.altitude.collectAsState().value,
-                        )
-                        SpinButton(title = "Reset", spinning = this@MainActivity.applyingAltitude) {
-                            when {
-                                ContextCompat.checkSelfPermission(
-                                    this@MainActivity,
-                                    Manifest.permission.ACCESS_FINE_LOCATION
-                                ) == PackageManager.PERMISSION_GRANTED -> {
-                                    this@MainActivity.applyCurrentAltitude()
-                                }
-
-                                ActivityCompat.shouldShowRequestPermissionRationale(
-                                    this@MainActivity,
-                                    Manifest.permission.ACCESS_FINE_LOCATION
-                                ) -> {
-                                    // TODO
-                                    // Show a message
-                                }
-
-                                else -> {
-                                    this@MainActivity.setAltitudeLauncher.launch(
-                                        arrayOf(
-                                            Manifest.permission.ACCESS_FINE_LOCATION,
-                                            Manifest.permission.ACCESS_COARSE_LOCATION
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    )
                 }
             }
         }
 
         this.fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+    }
+
+    @SuppressWarnings("MissingPermission")
+    @Composable
+    private fun Vario(modifier: Modifier = Modifier) {
+        val scope = rememberCoroutineScope()
+        val setAltitudeLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.values.all { it }) {
+                scope.launch {
+                    this@MainActivity.applyCurrentAltitude()
+                }
+            }
+        }
+
+        Column(
+            modifier = modifier
+        ) {
+            val varioViewModel = this@MainActivity.varioViewModel
+            Altitude(
+                altitude = varioViewModel.altitude.collectAsState().value,
+            )
+            SpinButton(title = "Reset", spinning = this@MainActivity.applyingAltitude) {
+                if (this@MainActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    this@MainActivity.applyCurrentAltitude()
+                } else {
+                    setAltitudeLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                    )
+                }
+            }
+        }
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -102,17 +104,6 @@ class MainActivity : ComponentActivity() {
         VarioViewModel.Factory
     }
 
-    private var setAltitudeLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)) {
-                this.lifecycleScope.launch {
-                    this@MainActivity.applyCurrentAltitude()
-                }
-            } else {
-                // TODO
-                // Show a message
-            }
-        }
     private var applyingAltitude = MutableStateFlow(false)
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
