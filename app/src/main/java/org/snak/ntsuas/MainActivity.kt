@@ -43,11 +43,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             NtsuasTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column {
+                    Column(
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
                         val varioViewModel = this@MainActivity.varioViewModel
                         Altitude(
                             altitude = varioViewModel.altitude.collectAsState().value,
-                            modifier = Modifier.padding(innerPadding)
                         )
                         SpinButton(title = "Reset", spinning = this@MainActivity.applyingAltitude) {
                             when {
