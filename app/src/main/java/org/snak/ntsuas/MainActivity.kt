@@ -2,6 +2,7 @@ package org.snak.ntsuas
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.icu.text.DecimalFormat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -130,8 +131,9 @@ private fun SpinButton(title: String, spinning: Boolean, job: () -> Unit) {
 
 @Composable
 fun Altitude(altitude: Double, modifier: Modifier = Modifier) {
+    val format = DecimalFormat("#,##0.00")
     Text(
-        text = "${altitude}",
+        text = format.format(altitude),
         modifier = modifier
     )
 }
