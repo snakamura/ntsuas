@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.icu.text.DecimalFormat
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -135,11 +136,19 @@ class MainActivity : ComponentActivity() {
                     if (this@MainActivity.checkSelfPermission(Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE) == PackageManager.PERMISSION_GRANTED) {
                         startVarioService()
                     } else {
+                        val permissions =
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                                arrayOf(
+                                    Manifest.permission.FOREGROUND_SERVICE,
+                                    Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE
+                                )
+                            } else {
+                                arrayOf(
+                                    Manifest.permission.FOREGROUND_SERVICE
+                                )
+                            }
                         startVarioServiceLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.FOREGROUND_SERVICE,
-                                Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE
-                            )
+                            permissions
                         )
                     }
                 } else {
