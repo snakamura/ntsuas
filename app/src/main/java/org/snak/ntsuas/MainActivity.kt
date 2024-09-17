@@ -1,6 +1,7 @@
 package org.snak.ntsuas
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.icu.text.DecimalFormat
 import android.os.Bundle
@@ -27,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -81,6 +83,32 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        // TODO
+        // This should be determined by directly checking if the service is running
+        var varioServiceRunning by remember { mutableStateOf(false) }
+
+        val varioServiceIntent = Intent(this, VarioService::class.java)
+
+        fun startVarioService() {
+            ContextCompat.startForegroundService(this, varioServiceIntent)
+
+            varioServiceRunning = true
+        }
+
+        fun stopVarioService() {
+            this.stopService(varioServiceIntent)
+
+            varioServiceRunning = false
+        }
+
+        val startVarioServiceLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.values.all { it }) {
+                startVarioService()
+            }
+        }
+
         Column(
             modifier = modifier
         ) {
@@ -101,6 +129,24 @@ class MainActivity : ComponentActivity() {
                         )
                     )
                 }
+            }
+            Button(onClick = {
+                if (!varioServiceRunning) {
+                    if (this@MainActivity.checkSelfPermission(Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE) == PackageManager.PERMISSION_GRANTED) {
+                        startVarioService()
+                    } else {
+                        startVarioServiceLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.FOREGROUND_SERVICE,
+                                Manifest.permission.FOREGROUND_SERVICE_SPECIAL_USE
+                            )
+                        )
+                    }
+                } else {
+                    stopVarioService()
+                }
+            }) {
+                Text(text = if (!varioServiceRunning) "Start" else "Stop")
             }
         }
     }
