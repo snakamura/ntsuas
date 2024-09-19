@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -114,8 +113,9 @@ class MainActivity : ComponentActivity() {
             modifier = modifier
         ) {
             val varioViewModel = this@MainActivity.varioViewModel
-            Altitude(
-                altitude = varioViewModel.altitude.collectAsState().value,
+            Decimal(
+                value = varioViewModel.altitude.collectAsState().value,
+                format = "#,###.00"
             )
             SpinButton(title = "Reset", spinning = applyingCurrentAltitude) {
                 if (this@MainActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -184,18 +184,10 @@ private fun SpinButton(title: String, spinning: Boolean, job: () -> Unit) {
 }
 
 @Composable
-fun Altitude(altitude: Double, modifier: Modifier = Modifier) {
-    val format = DecimalFormat("#,##0.00")
+fun Decimal(value: Double, format: String, modifier: Modifier = Modifier) {
+    val format = DecimalFormat(format)
     Text(
-        text = format.format(altitude),
+        text = format.format(value),
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AltitudePreview() {
-    NtsuasTheme {
-        Altitude(432.1234567)
-    }
 }
