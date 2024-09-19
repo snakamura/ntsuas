@@ -19,6 +19,9 @@ class VarioViewModel(
         this.vario.setAltitude(altitude)
     }
 
+    val pressure: StateFlow<Double>
+        get() = this.vario.pressure
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             this.initializer {

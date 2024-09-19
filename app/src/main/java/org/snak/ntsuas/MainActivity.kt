@@ -117,6 +117,10 @@ class MainActivity : ComponentActivity() {
                 value = varioViewModel.altitude.collectAsState().value,
                 format = "#,###.00"
             )
+            Decimal(
+                value = varioViewModel.pressure.collectAsState().value,
+                format = "#,###.0"
+            )
             SpinButton(title = "Reset", spinning = applyingCurrentAltitude) {
                 if (this@MainActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     scope.launch {
