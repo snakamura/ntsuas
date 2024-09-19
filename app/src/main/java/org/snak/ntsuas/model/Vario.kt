@@ -10,6 +10,13 @@ class Vario {
     val altitude: StateFlow<Double> = this._altitude.asStateFlow()
 
     fun setAltitude(altitude: Double) {
-        this._altitude.update { _ -> altitude }
+        this._altitude.update { altitude }
+    }
+
+    private val _pressure: MutableStateFlow<Double> = MutableStateFlow(0.0)
+    val pressure: StateFlow<Double> = this._pressure.asStateFlow()
+
+    fun setPressure(pressure: Double) {
+        this._pressure.update { pressure }
     }
 }
