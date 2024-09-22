@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
                 Priority.PRIORITY_HIGH_ACCURACY,
                 null
             ).await()
-            this.varioViewModel.setAltitude(location.altitude)
+            this.varioViewModel.setBaseAltitude(location.altitude)
 
             applyingCurrentAltitude = false
         }

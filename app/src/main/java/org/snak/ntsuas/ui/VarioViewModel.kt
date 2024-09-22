@@ -15,8 +15,8 @@ class VarioViewModel(
     val altitude: StateFlow<Double?>
         get() = this.vario.altitude
 
-    fun setAltitude(altitude: Double) {
-        this.vario.setAltitude(altitude)
+    fun setBaseAltitude(altitude: Double) {
+        this.vario.setBaseAltitude(altitude)
     }
 
     val pressure: StateFlow<Double?>
