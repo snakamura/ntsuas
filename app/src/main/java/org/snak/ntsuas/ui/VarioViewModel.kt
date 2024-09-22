@@ -12,14 +12,14 @@ import org.snak.ntsuas.model.Vario
 class VarioViewModel(
     private val vario: Vario
 ) : ViewModel() {
-    val altitude: StateFlow<Double>
+    val altitude: StateFlow<Double?>
         get() = this.vario.altitude
 
     fun setAltitude(altitude: Double) {
         this.vario.setAltitude(altitude)
     }
 
-    val pressure: StateFlow<Double>
+    val pressure: StateFlow<Double?>
         get() = this.vario.pressure
 
     companion object {

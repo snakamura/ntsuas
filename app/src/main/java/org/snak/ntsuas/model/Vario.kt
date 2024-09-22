@@ -6,15 +6,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class Vario {
-    private val _altitude: MutableStateFlow<Double> = MutableStateFlow(0.0)
-    val altitude: StateFlow<Double> = this._altitude.asStateFlow()
+    private val _altitude: MutableStateFlow<Double?> = MutableStateFlow(null)
+    val altitude: StateFlow<Double?> = this._altitude.asStateFlow()
 
     fun setAltitude(altitude: Double) {
         this._altitude.update { altitude }
     }
 
-    private val _pressure: MutableStateFlow<Double> = MutableStateFlow(0.0)
-    val pressure: StateFlow<Double> = this._pressure.asStateFlow()
+    private val _pressure: MutableStateFlow<Double?> = MutableStateFlow(null)
+    val pressure: StateFlow<Double?> = this._pressure.asStateFlow()
 
     fun setPressure(pressure: Double) {
         this._pressure.update { pressure }

@@ -188,10 +188,10 @@ private fun SpinButton(title: String, spinning: Boolean, job: () -> Unit) {
 }
 
 @Composable
-fun Decimal(value: Double, format: String, modifier: Modifier = Modifier) {
+fun Decimal(value: Double?, format: String, modifier: Modifier = Modifier) {
     val format = DecimalFormat(format)
     Text(
-        text = format.format(value),
+        text = if (value != null) format.format(value) else "-",
         modifier = modifier
     )
 }
