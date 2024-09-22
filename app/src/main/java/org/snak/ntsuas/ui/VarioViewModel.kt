@@ -22,6 +22,9 @@ class VarioViewModel(
     val pressure: StateFlow<Double?>
         get() = this.vario.pressure
 
+    val temperature: StateFlow<Double?>
+        get() = this.vario.temperature
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             this.initializer {

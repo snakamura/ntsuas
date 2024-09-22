@@ -28,17 +28,36 @@ class VarioService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val sensorManager = this.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
         val pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
         if (pressureSensor != null) {
+            val pressureSensorEventListener = PressureSensorEventListner()
             if (sensorManager.registerListener(
-                    this.sensorEventListener,
+                    pressureSensorEventListener,
                     pressureSensor,
                     SensorManager.SENSOR_DELAY_FASTEST
                 )
             ) {
-                this.sensorManager = sensorManager
+                this.pressureSensorEventListener = pressureSensorEventListener
             }
         }
+
+        val temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
+        if (temperatureSensor != null) {
+            val temperatureSensorEventListener = TemperatureSensorEventListener()
+            if (sensorManager.registerListener(
+                    temperatureSensorEventListener,
+                    temperatureSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+            ) {
+                this.temperatureSensorEventListener = temperatureSensorEventListener
+            }
+        } else {
+            this.vario.setBaseTemperature(DEFAULT_TEMPERATURE)
+        }
+
+        this.sensorManager = sensorManager
 
         val notificationChannel =
             NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
@@ -62,7 +81,12 @@ class VarioService : Service() {
     override fun onDestroy() {
         val sensorManager = this.sensorManager
         if (sensorManager != null) {
-            sensorManager.unregisterListener(this.sensorEventListener)
+            if (this.pressureSensorEventListener != null) {
+                sensorManager.unregisterListener(this.pressureSensorEventListener)
+            }
+            if (this.temperatureSensorEventListener != null) {
+                sensorManager.unregisterListener(this.temperatureSensorEventListener)
+            }
             this.sensorManager = null
         }
 
@@ -73,7 +97,7 @@ class VarioService : Service() {
 
     private var sensorManager: SensorManager? = null
 
-    private val sensorEventListener = object : SensorEventListener {
+    private inner class PressureSensorEventListner : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
             if (event != null && event.values.size > 0) {
                 this@VarioService.vario.setPressure(event.values[0].toDouble())
@@ -84,10 +108,26 @@ class VarioService : Service() {
         }
     }
 
+    private var pressureSensorEventListener: PressureSensorEventListner? = null
+
+    private inner class TemperatureSensorEventListener : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event != null && event.values.size > 0) {
+                this@VarioService.vario.setTemperature(event.values[0].toDouble())
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        }
+    }
+
+    private var temperatureSensorEventListener: TemperatureSensorEventListener? = null
 
     companion object {
         private const val CHANNEL_ID = "Vario"
         private const val CHANNEL_NAME = "Vario"
         private const val ID = 1
+
+        private const val DEFAULT_TEMPERATURE = 25.0
     }
 }

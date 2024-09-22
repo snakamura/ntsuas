@@ -23,7 +23,7 @@ class Vario {
     val pressure: StateFlow<Double?> = this._pressure.asStateFlow()
 
     fun setPressure(pressure: Double) {
-        if (this.basePressure == null) {
+        if (this.baseAltitude != null && this.basePressure == null) {
             this.basePressure = pressure
         }
 
@@ -33,6 +33,25 @@ class Vario {
     }
 
     private var basePressure: Double? = null
+
+    private val _temperature: MutableStateFlow<Double?> = MutableStateFlow(null)
+    val temperature: StateFlow<Double?> = this._temperature.asStateFlow()
+
+    fun setTemperature(temperature: Double) {
+        if (this.baseAltitude != null && this.baseTemperature == null) {
+            this.setBaseTemperature(temperature)
+        }
+
+        this._temperature.update { temperature }
+    }
+
+    fun setBaseTemperature(temperature: Double) {
+        this.baseTemperature = celsiusToKelvin(temperature)
+        this._temperature.update { temperature }
+        this.updateAltitude()
+    }
+
+    private var baseTemperature: Double? = null
 
     private fun updateAltitude() {
         val baseAltitude = this.baseAltitude ?: return
@@ -46,9 +65,11 @@ class Vario {
         this._altitude.update { altitude }
     }
 
-    private var baseTemperature: Double? = 25.0 + 273.15
-
     companion object {
+        private fun celsiusToKelvin(celsius: Double): Double {
+            return celsius + 273.15
+        }
+
         private const val gamma = 6.5 / 1000
         private const val R = 287
         private const val g = 9.81
