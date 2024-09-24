@@ -128,6 +128,6 @@ class VarioService : Service() {
         private const val CHANNEL_NAME = "Vario"
         private const val ID = 1
 
-        private const val DEFAULT_TEMPERATURE = 25.0
+        private const val DEFAULT_TEMPERATURE = 15.0
     }
 }
