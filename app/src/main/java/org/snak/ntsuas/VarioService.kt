@@ -100,7 +100,7 @@ class VarioService : Service() {
     private inner class PressureSensorEventListner : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
             if (event != null && event.values.size > 0) {
-                this@VarioService.vario.setPressure(event.values[0].toDouble())
+                this@VarioService.vario.setPressure(event.values[0].toDouble(), event.timestamp)
             }
         }
 

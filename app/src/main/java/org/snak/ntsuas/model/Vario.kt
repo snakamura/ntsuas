@@ -6,6 +6,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.math.pow
 
+data class Pressure(
+    val value: Double,
+    val timestamp: Long
+)
+
 class Vario {
     private val _altitude: MutableStateFlow<Double?> = MutableStateFlow(null)
     val altitude: StateFlow<Double?> = this._altitude.asStateFlow()
@@ -14,20 +19,20 @@ class Vario {
 
     fun setBaseAltitude(altitude: Double) {
         this.baseAltitude = altitude
-        this.basePressure = this.pressure.value
+        this.basePressure = this.pressure.value?.value
 
         this._altitude.update { altitude }
     }
 
-    private val _pressure: MutableStateFlow<Double?> = MutableStateFlow(null)
-    val pressure: StateFlow<Double?> = this._pressure.asStateFlow()
+    private val _pressure: MutableStateFlow<Pressure?> = MutableStateFlow(null)
+    val pressure: StateFlow<Pressure?> = this._pressure.asStateFlow()
 
-    fun setPressure(pressure: Double) {
+    fun setPressure(pressure: Double, timestamp: Long) {
         if (this.baseAltitude != null && this.basePressure == null) {
             this.basePressure = pressure
         }
 
-        this._pressure.update { pressure }
+        this._pressure.update { Pressure(pressure, timestamp) }
 
         this.updateAltitude()
     }
@@ -60,7 +65,7 @@ class Vario {
         val pressure = this.pressure.value ?: return
 
         val altitude =
-            baseAltitude - (baseTemperature * (pressure / basePressure).pow(gamma * R / g) - baseTemperature) / gamma
+            baseAltitude - (baseTemperature * (pressure.value / basePressure).pow(gamma * R / g) - baseTemperature) / gamma
 
         this._altitude.update { altitude }
     }
