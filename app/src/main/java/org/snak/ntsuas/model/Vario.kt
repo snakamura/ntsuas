@@ -67,8 +67,18 @@ class Vario {
         val altitude =
             baseAltitude - (baseTemperature * (pressure.value / basePressure).pow(GAMMA * R / G) - baseTemperature) / GAMMA
 
-        this._altitude.update { altitude }
+        val filter = this.filter
+        if (filter == null) {
+            this.filter =
+                VarioFilter(baseAltitude, INITIAL_ALTITUDE_VARIANCE, PROCESS_NOISE_VARIANCE)
+        } else {
+            this._altitude.update {
+                filter.estimate(altitude, ALTITUDE_VARIANCE)
+            }
+        }
     }
+
+    private var filter: VarioFilter? = null
 
     companion object {
         private fun celsiusToKelvin(celsius: Double): Double {
@@ -78,5 +88,9 @@ class Vario {
         private const val GAMMA = 6.5 / 1000
         private const val R = 287
         private const val G = 9.81
+
+        private const val INITIAL_ALTITUDE_VARIANCE = 0.0
+        private const val ALTITUDE_VARIANCE = 0.1
+        private const val PROCESS_NOISE_VARIANCE = 0.1
     }
 }
