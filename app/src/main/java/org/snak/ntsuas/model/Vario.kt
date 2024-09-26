@@ -65,7 +65,7 @@ class Vario {
         val pressure = this.pressure.value ?: return
 
         val altitude =
-            baseAltitude - (baseTemperature * (pressure.value / basePressure).pow(gamma * R / g) - baseTemperature) / gamma
+            baseAltitude - (baseTemperature * (pressure.value / basePressure).pow(GAMMA * R / G) - baseTemperature) / GAMMA
 
         this._altitude.update { altitude }
     }
@@ -75,8 +75,8 @@ class Vario {
             return celsius + 273.15
         }
 
-        private const val gamma = 6.5 / 1000
+        private const val GAMMA = 6.5 / 1000
         private const val R = 287
-        private const val g = 9.81
+        private const val G = 9.81
     }
 }
