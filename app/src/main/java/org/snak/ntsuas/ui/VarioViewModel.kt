@@ -29,9 +29,6 @@ class VarioViewModel(
         get() = this.vario.pressure.map { it?.value }
             .stateIn(this.viewModelScope, SharingStarted.Eagerly, this.vario.pressure.value?.value)
 
-    val temperature: StateFlow<Double?>
-        get() = this.vario.temperature
-
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             this.initializer {

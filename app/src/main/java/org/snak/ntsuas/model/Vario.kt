@@ -39,33 +39,12 @@ class Vario {
 
     private var basePressure: Double? = null
 
-    private val _temperature: MutableStateFlow<Double?> = MutableStateFlow(null)
-    val temperature: StateFlow<Double?> = this._temperature.asStateFlow()
-
-    fun setTemperature(temperature: Double) {
-        val baseAltitude = this.baseAltitude
-        if (baseAltitude != null && this.baseTemperature == null) {
-            this.setBaseTemperature(temperature, baseAltitude)
-        }
-
-        this._temperature.update { temperature }
-    }
-
-    fun setBaseTemperature(temperature: Double, altitude: Double) {
-        val baseTemperature = temperature - (this.baseAltitude!! - altitude) * GAMMA
-        this.baseTemperature = celsiusToKelvin(baseTemperature)
-        this._temperature.update { baseTemperature }
-        this.updateAltitude()
-    }
-
-    private var baseTemperature: Double? = null
-
     private fun updateAltitude() {
         val baseAltitude = this.baseAltitude ?: return
         val basePressure = this.basePressure ?: return
-        val baseTemperature = this.baseTemperature ?: return
         val pressure = this.pressure.value ?: return
 
+        val baseTemperature = TEMPERATURE_AT_SEA_LEVEL - baseAltitude * GAMMA
         val altitude =
             baseAltitude - (baseTemperature * (pressure.value / basePressure).pow(GAMMA * R / G) - baseTemperature) / GAMMA
 
@@ -86,6 +65,8 @@ class Vario {
         private fun celsiusToKelvin(celsius: Double): Double {
             return celsius + 273.15
         }
+
+        private const val TEMPERATURE_AT_SEA_LEVEL = 15.0
 
         private const val GAMMA = 6.5 / 1000
         private const val R = 287

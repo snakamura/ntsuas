@@ -42,21 +42,6 @@ class VarioService : Service() {
             }
         }
 
-        val temperatureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
-        if (temperatureSensor != null) {
-            val temperatureSensorEventListener = TemperatureSensorEventListener()
-            if (sensorManager.registerListener(
-                    temperatureSensorEventListener,
-                    temperatureSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
-            ) {
-                this.temperatureSensorEventListener = temperatureSensorEventListener
-            }
-        } else {
-            this.vario.setBaseTemperature(DEFAULT_TEMPERATURE_AT_SEA_LEVEL, SEA_LEVEL_ALTITUDE)
-        }
-
         this.sensorManager = sensorManager
 
         val notificationChannel =
@@ -84,9 +69,6 @@ class VarioService : Service() {
             if (this.pressureSensorEventListener != null) {
                 sensorManager.unregisterListener(this.pressureSensorEventListener)
             }
-            if (this.temperatureSensorEventListener != null) {
-                sensorManager.unregisterListener(this.temperatureSensorEventListener)
-            }
             this.sensorManager = null
         }
 
@@ -110,25 +92,9 @@ class VarioService : Service() {
 
     private var pressureSensorEventListener: PressureSensorEventListner? = null
 
-    private inner class TemperatureSensorEventListener : SensorEventListener {
-        override fun onSensorChanged(event: SensorEvent?) {
-            if (event != null && event.values.size > 0) {
-                this@VarioService.vario.setTemperature(event.values[0].toDouble())
-            }
-        }
-
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        }
-    }
-
-    private var temperatureSensorEventListener: TemperatureSensorEventListener? = null
-
     companion object {
         private const val CHANNEL_ID = "Vario"
         private const val CHANNEL_NAME = "Vario"
         private const val ID = 1
-
-        private const val DEFAULT_TEMPERATURE_AT_SEA_LEVEL = 15.0
-        private const val SEA_LEVEL_ALTITUDE = 0.0
     }
 }
