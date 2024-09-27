@@ -54,7 +54,7 @@ class VarioService : Service() {
                 this.temperatureSensorEventListener = temperatureSensorEventListener
             }
         } else {
-            this.vario.setBaseTemperature(DEFAULT_TEMPERATURE)
+            this.vario.setBaseTemperature(DEFAULT_TEMPERATURE_AT_SEA_LEVEL, SEA_LEVEL_ALTITUDE)
         }
 
         this.sensorManager = sensorManager
@@ -128,6 +128,7 @@ class VarioService : Service() {
         private const val CHANNEL_NAME = "Vario"
         private const val ID = 1
 
-        private const val DEFAULT_TEMPERATURE = 15.0
+        private const val DEFAULT_TEMPERATURE_AT_SEA_LEVEL = 15.0
+        private const val SEA_LEVEL_ALTITUDE = 0.0
     }
 }

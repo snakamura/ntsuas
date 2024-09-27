@@ -43,16 +43,18 @@ class Vario {
     val temperature: StateFlow<Double?> = this._temperature.asStateFlow()
 
     fun setTemperature(temperature: Double) {
-        if (this.baseAltitude != null && this.baseTemperature == null) {
-            this.setBaseTemperature(temperature)
+        val baseAltitude = this.baseAltitude
+        if (baseAltitude != null && this.baseTemperature == null) {
+            this.setBaseTemperature(temperature, baseAltitude)
         }
 
         this._temperature.update { temperature }
     }
 
-    fun setBaseTemperature(temperature: Double) {
-        this.baseTemperature = celsiusToKelvin(temperature)
-        this._temperature.update { temperature }
+    fun setBaseTemperature(temperature: Double, altitude: Double) {
+        val baseTemperature = temperature - (this.baseAltitude!! - altitude) * GAMMA
+        this.baseTemperature = celsiusToKelvin(baseTemperature)
+        this._temperature.update { baseTemperature }
         this.updateAltitude()
     }
 
