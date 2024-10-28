@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.math.pow
 
 data class Pressure(
     val value: Double,
@@ -44,17 +43,19 @@ class Vario {
         val basePressure = this.basePressure ?: return
         val pressure = this.pressure.value ?: return
 
-        val baseTemperature = TEMPERATURE_AT_SEA_LEVEL - baseAltitude * GAMMA
-        val altitude =
-            baseAltitude - (baseTemperature * (pressure.value / basePressure).pow(GAMMA * R / G) - baseTemperature) / GAMMA
-
         val filter = this.filter
         if (filter == null) {
             this.filter =
-                VarioFilter(baseAltitude, INITIAL_ALTITUDE_VARIANCE, PROCESS_NOISE_VARIANCE)
+                VarioFilter(
+                    baseAltitude,
+                    INITIAL_ALTITUDE_VARIANCE,
+                    baseAltitude,
+                    basePressure,
+                    PROCESS_NOISE_VARIANCE
+                )
         } else {
             this._altitude.update {
-                filter.estimate(altitude, ALTITUDE_VARIANCE)
+                filter.estimate(pressure.value, ALTITUDE_VARIANCE)
             }
         }
     }
