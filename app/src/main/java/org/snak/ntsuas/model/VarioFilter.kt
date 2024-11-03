@@ -13,19 +13,8 @@ class VarioFilter(
         val predicatedAltitude = this.currentAltitude
         val predicatedVariance = this.currentVariance + this.processNoiseVariance
 
-        val baseTemperature = TEMPERATURE_AT_SEA_LEVEL - baseAltitude * GAMMA
-        fun altitudeToPressure(altitude: Double): Double =
-            this.basePressure * ((baseTemperature - GAMMA * (altitude - baseAltitude)) / baseTemperature).pow(
-                G / (GAMMA * R)
-            )
-
-        fun altitudeToPressureDiff(altitude: Double): Double =
-            -basePressure * G * ((baseTemperature - GAMMA * (altitude - baseAltitude)) / baseTemperature).pow(
-                (G / (GAMMA * R)) / (R * (baseTemperature - GAMMA * (altitude - baseAltitude)))
-            )
-
-        val observedPressure = altitudeToPressure(this.currentAltitude)
-        var jacobian = altitudeToPressureDiff(this.currentAltitude)
+        val observedPressure = this.altitudeToPressure(predicatedAltitude)
+        var jacobian = this.altitudeToPressureDiff(predicatedAltitude)
 
         val gain =
             (predicatedVariance * jacobian) / (jacobian * predicatedVariance * jacobian + variance)
@@ -40,11 +29,23 @@ class VarioFilter(
         return estimatedAltitude
     }
 
+    fun altitudeToPressure(altitude: Double): Double =
+        this.basePressure * ((this.baseTemperature - GAMMA * (altitude - this.baseAltitude)) / this.baseTemperature).pow(
+            G / (GAMMA * R)
+        )
+
+    fun altitudeToPressureDiff(altitude: Double): Double =
+        -basePressure * G * ((this.baseTemperature - GAMMA * (altitude - this.baseAltitude)) / baseTemperature).pow(
+            (G / (GAMMA * R))
+        ) / (R * (baseTemperature - GAMMA * (altitude - this.baseAltitude)))
+
+    val baseTemperature: Double = TEMPERATURE_AT_SEA_LEVEL - this.baseAltitude * GAMMA
+
     private var currentAltitude = initialAltitude
     private var currentVariance = initialVariance
 
     companion object {
-        private const val TEMPERATURE_AT_SEA_LEVEL = 15.0
+        private const val TEMPERATURE_AT_SEA_LEVEL = 15.0 + 273.15
 
         private const val GAMMA = 6.5 / 1000
         private const val R = 287
